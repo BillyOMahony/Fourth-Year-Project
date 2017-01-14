@@ -9,7 +9,7 @@ public class GameManager : Photon.PunBehaviour {
     static public GameManager Instance;
     //Any other script can now call GameManager.Instance.method()
 
-
+    
     #endregion
 
 

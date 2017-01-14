@@ -10,6 +10,7 @@ public class LobbyManager : Photon.PunBehaviour
     public GameObject playerPanel;
     public GameObject canvas;
     public RectTransform individualPlayerPanel;
+    public float countdown;
     public Text countdownText;
     public int playersForGameToBegin = 4;
 
@@ -19,7 +20,6 @@ public class LobbyManager : Photon.PunBehaviour
 
     GameObject panel;
     public bool _enoughPlayers = false;
-    public float _countdown;
 
     #endregion
 
@@ -27,6 +27,8 @@ public class LobbyManager : Photon.PunBehaviour
 
     void Start()
     {
+        PhotonNetwork.sendRate = 10;
+        PhotonNetwork.sendRateOnSerialize = 5;
         PlayerCountChange();
         countdownText = Instantiate(countdownText) as Text;
         countdownText.transform.SetParent(canvas.transform, false);
@@ -34,18 +36,29 @@ public class LobbyManager : Photon.PunBehaviour
 
     void Update()
     {
+        float currentTime = Mathf.Floor(countdown);
         // if enoughPlayers = True, countdown begins.
         // when countdown <= 0, Game begins.
         if (_enoughPlayers)
         {
-            _countdown -= Time.deltaTime;
-            if(_countdown <= 0.0f)
+            if (PhotonNetwork.isMasterClient)
+            {
+                countdown -= Time.deltaTime;
+            }
+
+            if(currentTime < 0)
+            {
+                currentTime = 0;
+            }
+            countdownText.text = "Game will begin in " + currentTime.ToString();
+
+            if (countdown <= 0.0f)
             {
                 BeginGame();
             }
-            countdownText.text = "Game will begin in " + Mathf.Floor(_countdown).ToString();
+            
         }
-
+        
     }
 
     #endregion
@@ -53,18 +66,24 @@ public class LobbyManager : Photon.PunBehaviour
 
     #region Photon Messages
 
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+
+        if (stream.isWriting == true)
+        {
+            stream.SendNext(countdown);
+        }
+        else
+        {
+            countdown = (float)stream.ReceiveNext();
+        }
+
+    }
+
     // Called when a player connects. 
     public override void OnPhotonPlayerConnected(PhotonPlayer other)
     {
         Debug.Log("OnPhotonPlayerConnected(): " + other.NickName);
-
-        /*
-         * This is how levels will be loaded. 
-        if(PhotonNetwork.isMasterClient){
-            LoadLevel();
-        }
-         *
-         */
 
         //Test Method
         PlayerCountChange();
@@ -89,7 +108,7 @@ public class LobbyManager : Photon.PunBehaviour
     {
         if (!PhotonNetwork.isMasterClient)
         {
-            Debug.LogError("PhotonNetwork: Trying to load level, but not master client.");
+            Debug.Log("PhotonNetwork: Trying to load level, but not master client.");
         }
         Debug.Log("PhotonNetwork: Loading Level: Lobby");
         //levels can be loaded by name(string), or build number (int)
@@ -125,7 +144,7 @@ public class LobbyManager : Photon.PunBehaviour
     void Countdown()
     {
         _enoughPlayers = !_enoughPlayers;
-        _countdown = 10.0f;
+        countdown = 10.0f;
     }
 
     void BeginGame()

@@ -17,7 +17,7 @@ public class PlayerManager : Photon.PunBehaviour {
     public MatchManager matchManager;
     bool dead = false;
 
-    Movement movement;
+    PlayerController controller;
     float timer = 5f;
 
     #endregion
@@ -25,7 +25,7 @@ public class PlayerManager : Photon.PunBehaviour {
     // Use this for initialization
     void Start () {
 
-        movement = gameObject.GetComponent<Movement>();
+        controller = gameObject.GetComponent<PlayerController>();
         owner = GetComponent<PhotonView>().owner.NickName;
         matchManager = GameObject.Find("MatchManager").GetComponent<MatchManager>();
         if(matchManager == null)
@@ -85,7 +85,7 @@ public class PlayerManager : Photon.PunBehaviour {
     [PunRPC]
     void DisableClient()
     {
-        movement.Disabled();
+        controller.Disabled();
         dead = true;
     }
 
@@ -106,7 +106,7 @@ public class PlayerManager : Photon.PunBehaviour {
         transform.position = spawnPoint.transform.position;
         transform.rotation = spawnPoint.transform.rotation;
         GetComponent<PhotonView>().RPC("Activate", PhotonTargets.All);
-        movement.Enabled();
+        controller.Enabled();
     }
 
 }
