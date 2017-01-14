@@ -31,6 +31,11 @@ public class Shoot : Photon.PunBehaviour{
             return;
         }
 
+        FireProjectile();
+    }
+
+    void FireProjectile()
+    {
         if (Input.GetButton("Fire1") && CanShoot)
         {
             //audio.Play();
@@ -39,7 +44,7 @@ public class Shoot : Photon.PunBehaviour{
             //NewProjectile = Instantiate(projectile, projectileSpawner.transform.position, projectileSpawner.transform.rotation) as GameObject; // use this line for engine test
 
             CanShoot = false;
-            timer = RateOfFire;           
+            timer = RateOfFire;
         }
         ShootTimer();
     }
