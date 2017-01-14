@@ -7,6 +7,7 @@ public class LobbyManager : Photon.PunBehaviour
 
     #region public variables
 
+    public string playerName;
     public GameObject playerPanel;
     public GameObject canvas;
     public RectTransform individualPlayerPanel;
@@ -19,7 +20,12 @@ public class LobbyManager : Photon.PunBehaviour
     #region private variables
 
     GameObject panel;
+    Teams teams;
+    public string team; 
     public bool _enoughPlayers = false;
+
+    Color red = new Color(0.447f, 0.255f, 0.18f, 1.0f);
+    Color blue = new Color(0.18f, 0.255f, 0.447f, 1.0f);
 
     #endregion
 
@@ -29,9 +35,23 @@ public class LobbyManager : Photon.PunBehaviour
     {
         PhotonNetwork.sendRate = 10;
         PhotonNetwork.sendRateOnSerialize = 5;
-        PlayerCountChange();
+
         countdownText = Instantiate(countdownText) as Text;
         countdownText.transform.SetParent(canvas.transform, false);
+        playerName = PhotonNetwork.player.NickName;
+
+        teams = GameObject.Find("GameManager").GetComponent<Teams>();
+        team = teams.GetTeam(playerName);
+
+        if (!PhotonNetwork.isMasterClient)
+        {
+            PlayerCountChangeOnStartPause();
+        }
+        else
+        {
+            PlayerCountChange();
+        }
+
     }
 
     void Update()
@@ -86,7 +106,8 @@ public class LobbyManager : Photon.PunBehaviour
         Debug.Log("OnPhotonPlayerConnected(): " + other.NickName);
 
         //Test Method
-        PlayerCountChange();
+        PlayerCountChangeOnStartPause();
+        
     }
 
     public override void OnPhotonPlayerDisconnected(PhotonPlayer other)
@@ -115,6 +136,9 @@ public class LobbyManager : Photon.PunBehaviour
         PhotonNetwork.LoadLevel("Lobby");
     }
 
+    /// <summary>
+    /// Called every time the number of players changes. It destroys the player UI and rebuilds it
+    /// </summary>
     void PlayerCountChange()
     {
         //Destroys panel, rebuilds it
@@ -126,12 +150,23 @@ public class LobbyManager : Photon.PunBehaviour
         //For each player creates text with player's name
         foreach (PhotonPlayer player in PhotonNetwork.playerList)
         {
-            RectTransform text = Instantiate(individualPlayerPanel);
-            text.transform.SetParent(panel.transform, false);
-            text.GetChild(0).GetComponent<Text>().text = player.name;
-            text.localPosition += Vector3.up * offset * -1;
+            RectTransform indvPlayerPanel = Instantiate(individualPlayerPanel);
+            indvPlayerPanel.transform.SetParent(panel.transform, false);
+            indvPlayerPanel.GetChild(0).GetComponent<Text>().text = player.name;
+            indvPlayerPanel.localPosition += Vector3.up * offset * -1;
             //each new text is 30 pixels below previous text. 
             offset += 60;
+
+            team = teams.GetTeam(player.NickName);
+            Debug.Log(player.NickName + " is on team: " + team);
+            if (team == "red")
+            {
+                indvPlayerPanel.GetComponent<Image>().color = red;
+            }
+            else if (team == "blue")
+            {
+                indvPlayerPanel.GetComponent<Image>().color = blue;
+            }
         }
 
         if (PhotonNetwork.room.PlayerCount >= playersForGameToBegin && !_enoughPlayers)
@@ -139,6 +174,11 @@ public class LobbyManager : Photon.PunBehaviour
             Debug.Log("Lobby: Calling Countdown()");
             Countdown();
         }
+    }
+
+    void PlayerCountChangeOnStartPause()
+    {
+        StartCoroutine(PlayerCountChangeIEnumerator(1));
     }
 
     void Countdown()
@@ -159,4 +199,12 @@ public class LobbyManager : Photon.PunBehaviour
     }
 
     #endregion
+
+    IEnumerator PlayerCountChangeIEnumerator(int seconds)
+    {
+        Debug.Log("Before Waiting 2 seconds");
+        yield return new WaitForSeconds(seconds);
+        PlayerCountChange();
+        Debug.Log("After Waiting 2 Seconds");
+    }
 }
