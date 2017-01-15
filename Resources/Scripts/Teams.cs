@@ -29,7 +29,6 @@ public class Teams : Photon.PunBehaviour{
     {
         if (!PhotonNetwork.isMasterClient)
         {
-            text.text = "";
             RedCount();
             BlueCount();
         }
@@ -48,7 +47,6 @@ public class Teams : Photon.PunBehaviour{
             teams.Add(other.NickName, _blue);
         }
 
-        text.text = "";
         RedCount();
         BlueCount();
     }
@@ -58,8 +56,6 @@ public class Teams : Photon.PunBehaviour{
 
         teams.Remove(other.NickName);
 
-
-        text.text = "";
         RedCount();
         BlueCount();
     }
@@ -73,9 +69,6 @@ public class Teams : Photon.PunBehaviour{
             if(player.Value == _red)
             {
                 redCount++;
-
-                //The following is temporary and should be deleted
-                text.text += "\n" + player.Value + ": " + player.Key; 
             }
         }
     }
@@ -88,9 +81,6 @@ public class Teams : Photon.PunBehaviour{
             if (player.Value == _blue)
             {
                 blueCount++;
-
-                //The following is temporary and should be deleted
-                text.text += "\n" + player.Value + ": " + player.Key;
             }
         }
     }

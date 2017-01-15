@@ -5,7 +5,8 @@ public class PlayerManager : Photon.PunBehaviour {
 
     #region public variables
     [Tooltip("The current Health of our player")]
-    public float Health = 100f;
+    public float OriginalHealth = 100f;
+    public float Health;
     public GameObject DeathCamera;
 
     #endregion
@@ -14,10 +15,13 @@ public class PlayerManager : Photon.PunBehaviour {
 
     string owner;
 
-    public MatchManager matchManager;
+    MatchManager matchManager;
     bool dead = false;
 
     PlayerController controller;
+
+    PhotonView _pv;
+
     float timer = 5f;
 
     #endregion
@@ -25,13 +29,18 @@ public class PlayerManager : Photon.PunBehaviour {
     // Use this for initialization
     void Start () {
 
+        _pv = GetComponent<PhotonView>();
+
+        Health = OriginalHealth;
+
         controller = gameObject.GetComponent<PlayerController>();
-        owner = GetComponent<PhotonView>().owner.NickName;
+        owner = _pv.owner.NickName;
         matchManager = GameObject.Find("MatchManager").GetComponent<MatchManager>();
         if(matchManager == null)
         {
             Debug.Log("<Color=Red>Cannot Find</Color> MatchManager GameObject");
         }
+
     }
 	
 	// Update is called once per frame
@@ -47,6 +56,11 @@ public class PlayerManager : Photon.PunBehaviour {
         if (PhotonNetwork.isMasterClient)
         {
             Health -= damage;
+
+            GetComponent<PhotonView>().RPC("ReceiveDamage", PhotonTargets.Others, damage);
+
+            Debug.Log("Damage Taken, calling _PUIM.UpdateHealthBar()");
+
             if (Health <= 0)
             {
                 GetComponent<PhotonView>().RPC("DeActivate", PhotonTargets.All);
@@ -87,6 +101,12 @@ public class PlayerManager : Photon.PunBehaviour {
     {
         controller.Disabled();
         dead = true;
+    }
+
+    [PunRPC]
+    void ReceiveDamage(float dmg)
+    {
+        Health -= dmg;
     }
 
     void Respawn()
