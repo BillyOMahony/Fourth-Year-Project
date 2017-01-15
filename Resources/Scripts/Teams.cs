@@ -53,7 +53,6 @@ public class Teams : Photon.PunBehaviour{
 
     public void RemovePlayer(PhotonPlayer other)
     {
-
         teams.Remove(other.NickName);
 
         RedCount();
