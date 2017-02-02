@@ -8,11 +8,15 @@ public class PlayerController : Photon.PunBehaviour {
 
     #region public variables movement
 
-    public float maxSpeed = 10.0f;
+    //Network variables
     public float speed = 0f;
+    public Vector3 turn;
+
+    //public 
+
+    public float maxSpeed = 10.0f;
 
     public float turnSpeed = 10f;
-    public Vector3 turn;
 
     public float engine = 0f;
     public float engineAcceleration = 0.2f;
@@ -45,8 +49,8 @@ public class PlayerController : Photon.PunBehaviour {
     // Use this for initialization
     void Start()
     {
-        PhotonNetwork.sendRate = 40;
-        PhotonNetwork.sendRateOnSerialize = 20;
+        PhotonNetwork.sendRate = 60;
+        PhotonNetwork.sendRateOnSerialize = 30;
 
         _spaceship = gameObject;
         audio = projectileSpawner.GetComponent<AudioSource>();
@@ -67,10 +71,14 @@ public class PlayerController : Photon.PunBehaviour {
             SetThrottle();
             SetTurn();
             FireProjectile();
-        }
 
+            ApplyThrottle();
+            ApplyTurn();
+        }
+        /*
         ApplyThrottle();
         ApplyTurn();
+        */
 
         ShootTimer();
     }
@@ -161,13 +169,17 @@ public class PlayerController : Photon.PunBehaviour {
     {
         if (stream.isWriting == true)
         {
-            stream.SendNext(speed);
-            stream.SendNext(turn);
+            stream.SendNext(transform.position);
+            stream.SendNext(transform.rotation);
+        //    stream.SendNext(speed);
+        //    stream.SendNext(turn);
         }
         else
         {
-            speed = (float)stream.ReceiveNext();
-            turn = (Vector3)stream.ReceiveNext();
+            transform.position = (Vector3)stream.ReceiveNext();
+            transform.rotation = (Quaternion)stream.ReceiveNext();
+        //    speed = (float)stream.ReceiveNext();
+        //    turn = (Vector3)stream.ReceiveNext();
         }
     }
 }

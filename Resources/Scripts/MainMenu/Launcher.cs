@@ -83,6 +83,11 @@ public class Launcher : Photon.PunBehaviour {
         }
     }
 
+    public void Quit()
+    {
+        Application.Quit();
+    }
+
     #endregion
 
     #region Photon.PunBehaviour Callbacks

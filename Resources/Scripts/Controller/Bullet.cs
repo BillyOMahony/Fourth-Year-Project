@@ -31,7 +31,7 @@ public class Bullet : MonoBehaviour {
                 {
                     col.transform.SendMessage("Damage", 10, SendMessageOptions.DontRequireReceiver);
                     Debug.Log("Bullet from " + owner + " has hit " + col.transform.parent.gameObject.GetComponent<PhotonView>().owner.NickName);
-                    PhotonNetwork.Destroy(this.gameObject);     
+                    PhotonNetwork.Destroy(gameObject);     
                 }
             }
             
