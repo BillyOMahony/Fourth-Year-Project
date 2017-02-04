@@ -195,6 +195,8 @@ public class LobbyManager : Photon.PunBehaviour
         }
         Debug.Log("PhotonNetwork: Loading Level: Level_AsteroidField");
         //levels can be loaded by name(string), or build number (int)
+        PhotonNetwork.room.IsOpen = false;
+        Object.DontDestroyOnLoad(GameObject.Find("GameManager"));
         PhotonNetwork.LoadLevel("Level_AsteroidField");
     }
 
