@@ -7,7 +7,8 @@ public class PlayerUIManager : Photon.PunBehaviour {
 
     public bool mine;
 
-    public PlayerController _PC;
+    //public PlayerController _PC;
+    public PlayerControllerRB _PC;
     public PlayerManager _PM;
     public PhotonView _PV;
 
@@ -16,7 +17,7 @@ public class PlayerUIManager : Photon.PunBehaviour {
 
         _PV = GetComponent<PhotonView>();
         _PM = GetComponent<PlayerManager>();
-        _PC = GetComponent<PlayerController>();
+        _PC = GetComponent<PlayerControllerRB>();
 
         mine = _PC.GetComponent<PhotonView>().isMine;
 

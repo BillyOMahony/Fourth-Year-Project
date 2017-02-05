@@ -10,17 +10,26 @@ public class PlayerControllerRB : Photon.PunBehaviour
     #region public variables movement
 
     //Network variables
-    public float acceleration = 0f;
     public float turn;
+    public float pitch;
+    public float roll;
 
     //public 
 
     public float maxSpeed = 10.0f;
+    public float maxHorizontalSpeed = 3.0f;
+    public float maxVerticalSpeed = 3.0f;
 
     public float turnSpeed = 10f;
 
     public float engine = 0f;
     public float engineAcceleration = 0.2f;
+
+    public float xVel;
+    public float yVel;
+    public float zVel;
+
+    public float maxAllowedSpeed;
 
     #endregion
 
@@ -34,6 +43,11 @@ public class PlayerControllerRB : Photon.PunBehaviour
     #endregion
 
     #region private variables
+
+    float newVel;
+    float _acceleration = 0f;
+    float _horizontalAcceleration = 0f;
+    float _verticalAcceleration = 0f;
 
     GameObject _spaceship;
     Rigidbody _body;
@@ -72,17 +86,25 @@ public class PlayerControllerRB : Photon.PunBehaviour
 
         if (photonView.isMine)
         {
+            xVel = transform.InverseTransformDirection(_body.velocity).x;
+            yVel = transform.InverseTransformDirection(_body.velocity).y;
+            zVel = transform.InverseTransformDirection(_body.velocity).z;
+
             SetThrottle();
+            HorizontalMovement();
+            VerticalMovement();
+
             SetTurn();
+            Pitch();
+            Roll();
+
             FireProjectile();
 
             ApplyThrottle();
             ApplyTurn();
+
+            Stabilization();
         }
-        /*
-        ApplyThrottle();
-        ApplyTurn();
-        */
 
         ShootTimer();
     }
@@ -125,34 +147,78 @@ public class PlayerControllerRB : Photon.PunBehaviour
             }
         }
 
-        float xVel = transform.InverseTransformDirection(_body.velocity).x;
-        float yVel = transform.InverseTransformDirection(_body.velocity).y;
-        float zVel = transform.InverseTransformDirection(_body.velocity).z;
+        maxAllowedSpeed = maxSpeed * engine;
 
-        if (xVel < maxSpeed * engine)
+        if (zVel < maxAllowedSpeed)
         {
-            acceleration = engine * maxSpeed * Time.deltaTime;
+            _acceleration = engineAcceleration * maxSpeed * Time.deltaTime * 10;
         }
-        else if (xVel > maxSpeed)
+        else if (zVel > maxAllowedSpeed)
         {
-            float newVel = xVel - maxSpeed;
-            acceleration = newVel * -1;
+            newVel = zVel - maxAllowedSpeed;
+            _acceleration = newVel * -1;
+        }
+    }
+
+    void HorizontalMovement()
+    {
+
+        _horizontalAcceleration = Input.GetAxis("Horizontal") * Time.deltaTime * 50;
+
+        if(xVel > maxHorizontalSpeed)
+        {
+            newVel = xVel - maxHorizontalSpeed;
+            _horizontalAcceleration = newVel * -1;
+        }else if(xVel < maxHorizontalSpeed * -1)
+        {
+            newVel = xVel * -1 - maxHorizontalSpeed;
+            _horizontalAcceleration = newVel;
+        } 
+    }
+
+    void VerticalMovement() {
+
+        _verticalAcceleration = Input.GetAxis("Vertical") * Time.deltaTime * 50;
+
+        if (yVel > maxVerticalSpeed)
+        {
+            newVel = yVel - maxVerticalSpeed;
+            _verticalAcceleration = newVel * -1;
+        }
+        else if (yVel < maxVerticalSpeed * -1)
+        {
+            newVel = yVel * -1 - maxVerticalSpeed;
+            _verticalAcceleration = newVel;
         }
     }
 
     void ApplyThrottle()
     {
-        _body.AddForce(_spaceship.transform.forward * acceleration);
+        _body.AddForce(_spaceship.transform.forward * _acceleration);
+        _body.AddForce(_spaceship.transform.up * _verticalAcceleration);
+        _body.AddForce(_spaceship.transform.right * _horizontalAcceleration);
     }
 
     void SetTurn()
     {
-        turn = turnSpeed * Time.deltaTime * Input.GetAxis("Horizontal");
+        turn = turnSpeed * Time.deltaTime * Input.GetAxis("Yaw");
+    }
+
+    void Pitch()
+    {
+        pitch = turnSpeed * Time.deltaTime * Input.GetAxis("Mouse Y") * -1;
+    }
+
+    void Roll()
+    {
+        roll = turnSpeed * Time.deltaTime * Input.GetAxis("Mouse X") * -1;
     }
 
     void ApplyTurn()
     {
         _body.AddTorque(gameObject.transform.up * turn);
+        _body.AddTorque(gameObject.transform.forward * roll);
+        _body.AddTorque(gameObject.transform.right * pitch);
     }
 
 
@@ -163,8 +229,6 @@ public class PlayerControllerRB : Photon.PunBehaviour
         {
             //audio.Play();
             NewProjectile = PhotonNetwork.Instantiate("Bullet", projectileSpawner.transform.position, projectileSpawner.transform.rotation, 0) as GameObject; //This line for photon
-            //NewProjectile.GetComponent<Bullet>().owner = owner;
-            //NewProjectile = Instantiate(projectile, projectileSpawner.transform.position, projectileSpawner.transform.rotation) as GameObject; // use this line for engine test
 
             CanShoot = false;
             timer = RateOfFire;
@@ -180,6 +244,18 @@ public class PlayerControllerRB : Photon.PunBehaviour
         }
     }
 
+    void Stabilization()
+    {
+        if (!Input.GetButton("Vertical"))
+        {
+            _body.AddForce(_spaceship.transform.up * yVel * -1);
+        }
+        if (!Input.GetButton("Horizontal"))
+        {
+            _body.AddForce(_spaceship.transform.right * xVel * -1);
+        }
+    }
+
     #endregion
 
     void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -188,15 +264,11 @@ public class PlayerControllerRB : Photon.PunBehaviour
         {
             stream.SendNext(transform.position);
             stream.SendNext(transform.rotation);
-            //    stream.SendNext(speed);
-            //    stream.SendNext(turn);
         }
         else
         {
             transform.position = (Vector3)stream.ReceiveNext();
             transform.rotation = (Quaternion)stream.ReceiveNext();
-            //    speed = (float)stream.ReceiveNext();
-            //    turn = (Vector3)stream.ReceiveNext();
         }
     }
 }
