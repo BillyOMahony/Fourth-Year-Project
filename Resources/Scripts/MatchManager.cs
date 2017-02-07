@@ -26,6 +26,9 @@ public class MatchManager : Photon.PunBehaviour {
 
     void Start()
     {
+
+        Cursor.visible = false;
+
         if (playerPrefab == null)
         {
             Debug.Log("<Color=Red><a>Missing</a></Color> playerPrefab reference. Set it Up!");
