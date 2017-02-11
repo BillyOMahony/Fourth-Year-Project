@@ -36,7 +36,7 @@ public class PlayerUIManager : Photon.PunBehaviour {
 
     public void UpdateHealthBar()
     {
-        Debug.Log("UpdateHealthBar() called");
+        //Debug.Log("UpdateHealthBar() called");
         HealthBar.sizeDelta = new Vector2(_PM.Health * 3, 40);
     }
 }

@@ -18,7 +18,7 @@ public class PlayerManager : Photon.PunBehaviour {
     MatchManager matchManager;
     bool dead = false;
 
-    PlayerController controller;
+    PlayerControllerRB controller;
 
     PhotonView _pv;
 
@@ -33,7 +33,7 @@ public class PlayerManager : Photon.PunBehaviour {
 
         Health = OriginalHealth;
 
-        controller = gameObject.GetComponent<PlayerController>();
+        controller = gameObject.GetComponent<PlayerControllerRB>();
         owner = _pv.owner.NickName;
         matchManager = GameObject.Find("MatchManager").GetComponent<MatchManager>();
         if(matchManager == null)
@@ -78,6 +78,7 @@ public class PlayerManager : Photon.PunBehaviour {
                 }
 
                 GetComponent<PhotonView>().RPC("DisableClient", PhotonNetwork.playerList[i]);
+                GetComponent<PhotonView>().RPC("KillClient", PhotonNetwork.playerList[i]);
             }
         }
     }
@@ -100,7 +101,13 @@ public class PlayerManager : Photon.PunBehaviour {
     void DisableClient()
     {
         controller.Disabled();
+    }
+
+    [PunRPC]
+    void KillClient()
+    {
         dead = true;
+        controller.Killed();
     }
 
     [PunRPC]
@@ -128,5 +135,4 @@ public class PlayerManager : Photon.PunBehaviour {
         GetComponent<PhotonView>().RPC("Activate", PhotonTargets.All);
         controller.Enabled();
     }
-
 }

@@ -20,7 +20,10 @@ public class PlayerControllerRB : Photon.PunBehaviour
     public float maxHorizontalSpeed = 3.0f;
     public float maxVerticalSpeed = 3.0f;
 
+    public float accelerationMultiplier = 10f;
+
     public float turnSpeed = 10f;
+    public float maxTurn = 20f;
 
     public float engine = 0f;
     public float engineAcceleration = 0.2f;
@@ -28,6 +31,8 @@ public class PlayerControllerRB : Photon.PunBehaviour
     public float xVel;
     public float yVel;
     public float zVel;
+
+    public Vector3 pointVelocity;
 
     public float maxAllowedSpeed;
 
@@ -58,6 +63,8 @@ public class PlayerControllerRB : Photon.PunBehaviour
     float timer;
     AudioSource audio;
 
+    public float _massMultiplier;
+
     #endregion
 
     #region MonoBehaviour Methods
@@ -73,6 +80,8 @@ public class PlayerControllerRB : Photon.PunBehaviour
 
         audio = projectileSpawner.GetComponent<AudioSource>();
         owner = GetComponent<PhotonView>().owner.NickName;
+
+        _massMultiplier = _body.mass;
     }
 
     // Update is called once per frame
@@ -106,6 +115,8 @@ public class PlayerControllerRB : Photon.PunBehaviour
             Stabilization();
         }
 
+        _body.AddTorque(-_body.angularVelocity * 0.3f);
+
         ShootTimer();
     }
 
@@ -120,6 +131,12 @@ public class PlayerControllerRB : Photon.PunBehaviour
         {
             engine = 0f;
         }
+    }
+
+    public void Killed()
+    {
+        _body.velocity = Vector3.zero;
+        _body.angularVelocity = Vector3.zero;
     }
 
     public void Enabled()
@@ -151,7 +168,7 @@ public class PlayerControllerRB : Photon.PunBehaviour
 
         if (zVel < maxAllowedSpeed)
         {
-            _acceleration = engineAcceleration * maxSpeed * Time.deltaTime * 10;
+            _acceleration = engineAcceleration * maxSpeed * Time.deltaTime * accelerationMultiplier * _massMultiplier;
         }
         else if (zVel > maxAllowedSpeed)
         {
@@ -163,7 +180,7 @@ public class PlayerControllerRB : Photon.PunBehaviour
     void HorizontalMovement()
     {
 
-        _horizontalAcceleration = Input.GetAxis("Horizontal") * Time.deltaTime * 50;
+        _horizontalAcceleration = Input.GetAxis("Horizontal") * Time.deltaTime * 50 * _massMultiplier;
 
         if(xVel > maxHorizontalSpeed)
         {
@@ -178,7 +195,7 @@ public class PlayerControllerRB : Photon.PunBehaviour
 
     void VerticalMovement() {
 
-        _verticalAcceleration = Input.GetAxis("Vertical") * Time.deltaTime * 50;
+        _verticalAcceleration = Input.GetAxis("Vertical") * Time.deltaTime * 50 * _massMultiplier;
 
         if (yVel > maxVerticalSpeed)
         {
@@ -201,17 +218,17 @@ public class PlayerControllerRB : Photon.PunBehaviour
 
     void SetTurn()
     {
-        turn = turnSpeed * Time.deltaTime * Input.GetAxis("Yaw");
+        turn = turnSpeed * Time.deltaTime * Input.GetAxis("Yaw") * _massMultiplier * 0.5f;
     }
 
     void Pitch()
     {
-        pitch = turnSpeed * Time.deltaTime * Input.GetAxis("Mouse Y") * -1;
+        pitch = turnSpeed * Time.deltaTime * Input.GetAxis("Mouse Y") * -1 * _massMultiplier;
     }
 
     void Roll()
     {
-        roll = turnSpeed * Time.deltaTime * Input.GetAxis("Mouse X") * -1;
+        roll = turnSpeed * Time.deltaTime * Input.GetAxis("Mouse X") * -1 * _massMultiplier;
     }
 
     void ApplyTurn()
@@ -248,11 +265,11 @@ public class PlayerControllerRB : Photon.PunBehaviour
     {
         if (!Input.GetButton("Vertical"))
         {
-            _body.AddForce(_spaceship.transform.up * yVel * -1);
+            _body.AddForce(_spaceship.transform.up * yVel * -1 * _massMultiplier);
         }
         if (!Input.GetButton("Horizontal"))
         {
-            _body.AddForce(_spaceship.transform.right * xVel * -1);
+            _body.AddForce(_spaceship.transform.right * xVel * -1 * _massMultiplier);
         }
     }
 

@@ -5,6 +5,6 @@ public class ColliderDamage : MonoBehaviour {
 
 	void Damage(float damage)
     {
-        transform.parent.GetComponent<PlayerManager>().DamageTaken(damage);
+        transform.GetComponent<PlayerManager>().DamageTaken(damage);
     }
 }
