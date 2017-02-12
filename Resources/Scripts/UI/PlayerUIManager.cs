@@ -24,7 +24,7 @@ public class PlayerUIManager : Photon.PunBehaviour {
         if (mine)
         {
             HealthBar = Instantiate(HealthBar);
-            HealthBar.transform.SetParent(GameObject.Find("Canvas").transform, false);
+            HealthBar.transform.SetParent(GameObject.Find("GameUI").transform, false);
             HealthBar = HealthBar.transform.GetChild(0).GetComponent<RectTransform>();
         }
     }

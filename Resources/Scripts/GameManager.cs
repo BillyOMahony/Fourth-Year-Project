@@ -31,6 +31,11 @@ public class GameManager : Photon.PunBehaviour {
         PhotonNetwork.LeaveRoom();    
     }
 
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
+
     public override void OnPhotonPlayerConnected(PhotonPlayer other)
     {
         if (PhotonNetwork.isMasterClient)
