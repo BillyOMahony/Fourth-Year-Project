@@ -22,6 +22,9 @@ public class PlayerManager : Photon.PunBehaviour {
 
     PhotonView _pv;
 
+    ScoreManager _sm;
+    public IndividualScore _is;
+
     float timer = 5f;
 
     #endregion
@@ -29,14 +32,20 @@ public class PlayerManager : Photon.PunBehaviour {
     // Use this for initialization
     void Start () {
 
+        PhotonNetwork.sendRate = 20;
+        PhotonNetwork.sendRateOnSerialize = 10;
+
         _pv = GetComponent<PhotonView>();
+        _sm = GetComponent<ScoreManager>();
 
         Health = OriginalHealth;
 
         controller = gameObject.GetComponent<PlayerControllerRB>();
         owner = _pv.owner.NickName;
         matchManager = GameObject.Find("MatchManager").GetComponent<MatchManager>();
-        if(matchManager == null)
+        _is = GameObject.Find("IndividualScore").GetComponent<IndividualScore>();
+
+        if (matchManager == null)
         {
             Debug.Log("<Color=Red>Cannot Find</Color> MatchManager GameObject");
         }
@@ -51,7 +60,7 @@ public class PlayerManager : Photon.PunBehaviour {
         }
 	}
 
-    public void DamageTaken(float damage)
+    public void DamageTaken(float damage, string hitBy)
     {
         if (PhotonNetwork.isMasterClient)
         {
@@ -63,6 +72,7 @@ public class PlayerManager : Photon.PunBehaviour {
 
             if (Health <= 0)
             {
+                
                 GetComponent<PhotonView>().RPC("DeActivate", PhotonTargets.All);
                 int i = 0;
 
@@ -77,8 +87,23 @@ public class PlayerManager : Photon.PunBehaviour {
                     i++;
                 }
 
+                _is.CallUpdateDeaths(i);
+
                 GetComponent<PhotonView>().RPC("DisableClient", PhotonNetwork.playerList[i]);
                 GetComponent<PhotonView>().RPC("KillClient", PhotonNetwork.playerList[i]);
+
+                i = 0;
+
+                foreach (PhotonPlayer player in PhotonNetwork.playerList)
+                {
+                    if (player.NickName == hitBy)
+                    {
+                        break;
+                    }
+                    i++;
+                }
+                //Updates the kill count for the player who killed this player
+                _is.CallUpdateKills(i);
             }
         }
     }

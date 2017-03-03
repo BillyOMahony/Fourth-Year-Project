@@ -4,6 +4,8 @@ using System.Collections;
 public class Bullet : MonoBehaviour {
 
     public int initialSpeed = 4000;
+    public int damage = 10;
+    public string owner;
 
     float timer = 10;
 
@@ -25,9 +27,15 @@ public class Bullet : MonoBehaviour {
         {
             if (col.transform.gameObject.GetComponent<PhotonView>() != null && col.transform.gameObject.GetComponent<PhotonView>().owner.NickName != GetComponent<PhotonView>().owner.NickName)
             {
-                col.transform.SendMessage("Damage", 10, SendMessageOptions.DontRequireReceiver);
-                Debug.Log("Bullet from " + GetComponent<PhotonView>().owner.NickName + " has hit " + col.transform.gameObject.GetComponent<PhotonView>().owner.NickName);
-                PhotonNetwork.Destroy(gameObject);
+                DamageInfo damageInfo = new DamageInfo(owner, damage);
+
+                col.transform.SendMessage("Damage", damageInfo, SendMessageOptions.DontRequireReceiver);
+                Debug.Log("Bullet from " + owner + " has hit " + col.transform.gameObject.GetComponent<PhotonView>().owner.NickName);
+
+                if (GetComponent<PhotonView>().isMine)
+                {
+                    PhotonNetwork.Destroy(gameObject);
+                }
             }
             
         }
@@ -58,4 +66,35 @@ public class Bullet : MonoBehaviour {
           //  turn = (Vector3)stream.ReceiveNext();
         }
     }
+
+    [PunRPC]
+    void SetOwner(string ownr)
+    {
+        owner = ownr;
+    }
+
+}
+
+
+public class DamageInfo : MonoBehaviour
+{
+    string _hitBy;
+    float _damage;
+
+    public DamageInfo(string hitBy, float damage)
+    {
+        _hitBy = hitBy;
+        _damage = damage;
+    }
+
+    public string getHitBy()
+    {
+        return _hitBy;
+    }
+
+    public float getDamage()
+    {
+        return _damage;
+    }
+
 }

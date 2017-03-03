@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class PlayerUIManager : Photon.PunBehaviour {
@@ -26,7 +27,10 @@ public class PlayerUIManager : Photon.PunBehaviour {
             HealthBar = Instantiate(HealthBar);
             HealthBar.transform.SetParent(GameObject.Find("GameUI").transform, false);
             HealthBar = HealthBar.transform.GetChild(0).GetComponent<RectTransform>();
+            GameObject.Find("Text").GetComponent<Text>().text = _PV.owner.NickName;
         }
+
+        
     }
 	
 	// Update is called once per frame

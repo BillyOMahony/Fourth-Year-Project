@@ -14,6 +14,9 @@ public class MatchManager : Photon.PunBehaviour {
     //Temp
     public GameObject spawnPoint;
 
+    public int RedScore = 0;
+    public int BlueScore = 0;
+
     #endregion
 
     #region private variables

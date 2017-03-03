@@ -3,8 +3,11 @@ using System.Collections;
 
 public class ColliderDamage : MonoBehaviour {
 
-	void Damage(float damage)
+	void Damage(DamageInfo damageInfo)
     {
-        transform.GetComponent<PlayerManager>().DamageTaken(damage);
+        float damage = damageInfo.getDamage();
+        string hitBy = damageInfo.getHitBy();
+        transform.GetComponent<PlayerManager>().DamageTaken(damage, hitBy);
+        Debug.Log("Calling DamageTaken(" + damage + ", " + hitBy + ")");
     }
 }

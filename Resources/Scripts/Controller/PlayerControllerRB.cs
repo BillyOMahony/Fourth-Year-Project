@@ -63,7 +63,11 @@ public class PlayerControllerRB : Photon.PunBehaviour
     float timer;
     AudioSource audio;
 
+    ScoreManager _SM;
+
     public float _massMultiplier;
+
+    public Vector3 AngularVelocity;
 
     #endregion
 
@@ -87,6 +91,7 @@ public class PlayerControllerRB : Photon.PunBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        AngularVelocity = _body.angularVelocity;
 
         if (disabled)
         {
@@ -95,6 +100,8 @@ public class PlayerControllerRB : Photon.PunBehaviour
 
         if (photonView.isMine)
         {
+            _body.AddTorque(-_body.angularVelocity * _massMultiplier);
+
             xVel = transform.InverseTransformDirection(_body.velocity).x;
             yVel = transform.InverseTransformDirection(_body.velocity).y;
             zVel = transform.InverseTransformDirection(_body.velocity).z;
@@ -114,8 +121,6 @@ public class PlayerControllerRB : Photon.PunBehaviour
 
             Stabilization();
         }
-
-        _body.AddTorque(-_body.angularVelocity * 0.3f);
 
         ShootTimer();
     }
@@ -218,17 +223,17 @@ public class PlayerControllerRB : Photon.PunBehaviour
 
     void SetTurn()
     {
-        turn = turnSpeed * Time.deltaTime * Input.GetAxis("Yaw") * _massMultiplier * 0.5f;
+        turn = turnSpeed * Time.deltaTime * Input.GetAxis("Yaw") * _massMultiplier * 2;
     }
 
     void Pitch()
     {
-        pitch = turnSpeed * Time.deltaTime * Input.GetAxis("Mouse Y") * -1 * _massMultiplier;
+        pitch = turnSpeed * Time.deltaTime * Input.GetAxis("Mouse Y") * -1 * _massMultiplier * 2;
     }
 
     void Roll()
     {
-        roll = turnSpeed * Time.deltaTime * Input.GetAxis("Mouse X") * -1 * _massMultiplier;
+        roll = turnSpeed * Time.deltaTime * Input.GetAxis("Mouse X") * -1 * _massMultiplier * 2;
     }
 
     void ApplyTurn()
@@ -246,7 +251,7 @@ public class PlayerControllerRB : Photon.PunBehaviour
         {
             //audio.Play();
             NewProjectile = PhotonNetwork.Instantiate("Bullet", projectileSpawner.transform.position, projectileSpawner.transform.rotation, 0) as GameObject; //This line for photon
-
+            NewProjectile.GetComponent<PhotonView>().RPC("SetOwner", PhotonTargets.All, owner);
             CanShoot = false;
             timer = RateOfFire;
         }
