@@ -12,14 +12,14 @@ public class IndividualScore : Photon.PunBehaviour {
 	}
 	
     [PunRPC]
-    public void UpdateKills()
+    public void UpdateKills(int scoreAdd)
     {
-        kills++;
+        kills += scoreAdd;
     }
 
-    public void CallUpdateKills(int i)
+    public void CallUpdateKills(int i, int scoreAdd)
     {
-        GetComponent<PhotonView>().RPC("UpdateKills", PhotonNetwork.playerList[i]);
+        GetComponent<PhotonView>().RPC("UpdateKills", PhotonNetwork.playerList[i], scoreAdd);
     }
 
     [PunRPC]

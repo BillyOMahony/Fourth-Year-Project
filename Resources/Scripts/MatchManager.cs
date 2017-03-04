@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 using System.Linq;
 
@@ -14,8 +15,12 @@ public class MatchManager : Photon.PunBehaviour {
     //Temp
     public GameObject spawnPoint;
 
+    public GameObject GameManager;
+
     public int RedScore = 0;
     public int BlueScore = 0;
+
+    public int scoreToWin = 5;
 
     #endregion
 
@@ -29,6 +34,8 @@ public class MatchManager : Photon.PunBehaviour {
 
     void Start()
     {
+
+        GameManager = GameObject.Find("GameManager");
 
         Cursor.visible = false;
 
@@ -78,4 +85,52 @@ public class MatchManager : Photon.PunBehaviour {
         }
         return spawnPoint;
     }
+
+    #region RPCs
+    
+    [PunRPC]
+    public void redTeamScored(int score)
+    {
+        RedScore += score;
+    }
+
+    [PunRPC]
+    public void blueTeamScored(int score)
+    {
+        BlueScore += score;
+    }
+
+    [PunRPC]
+    public void GameOver()
+    {
+        //Stuff that happens when the game ends
+
+        PhotonNetwork.Destroy(GameManager);
+        SceneManager.LoadScene(0);
+        
+    }
+    
+    #endregion
+
+    public void UpdateScore(string team, int addScore)
+    {
+        if(team == "red")
+        {
+            GetComponent<PhotonView>().RPC("redTeamScored", PhotonTargets.All, addScore);
+        }
+        else if(team == "blue")
+        {
+            GetComponent<PhotonView>().RPC("blueTeamScored", PhotonTargets.All, addScore);
+        }
+
+        if(BlueScore >= scoreToWin || RedScore >= scoreToWin)
+        {
+            GetComponent<PhotonView>().RPC("GameOver", PhotonTargets.All);
+        }
+
+        //Stuff here to update GUI and such
+    }
+
+
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) { }
 }

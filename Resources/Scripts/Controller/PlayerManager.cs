@@ -8,6 +8,7 @@ public class PlayerManager : Photon.PunBehaviour {
     public float OriginalHealth = 100f;
     public float Health;
     public GameObject DeathCamera;
+    public string team;
 
     #endregion
 
@@ -16,6 +17,9 @@ public class PlayerManager : Photon.PunBehaviour {
     string owner;
 
     MatchManager matchManager;
+    GameObject _gameManager;
+    Teams _teams;
+
     bool dead = false;
 
     PlayerControllerRB controller;
@@ -23,7 +27,7 @@ public class PlayerManager : Photon.PunBehaviour {
     PhotonView _pv;
 
     ScoreManager _sm;
-    public IndividualScore _is;
+    IndividualScore _is;
 
     float timer = 5f;
 
@@ -44,6 +48,11 @@ public class PlayerManager : Photon.PunBehaviour {
         owner = _pv.owner.NickName;
         matchManager = GameObject.Find("MatchManager").GetComponent<MatchManager>();
         _is = GameObject.Find("IndividualScore").GetComponent<IndividualScore>();
+
+        _gameManager = GameObject.Find("GameManager");
+        _teams = _gameManager.GetComponent<Teams>();
+
+        team = _teams.GetTeam(owner);
 
         if (matchManager == null)
         {
@@ -72,7 +81,13 @@ public class PlayerManager : Photon.PunBehaviour {
 
             if (Health <= 0)
             {
-                
+                string hitByTeam = _teams.GetTeam(hitBy);
+                int scoreAdd = 1;
+                if(hitByTeam == team)
+                {
+                    scoreAdd = -1;
+                }
+
                 GetComponent<PhotonView>().RPC("DeActivate", PhotonTargets.All);
                 int i = 0;
 
@@ -103,7 +118,9 @@ public class PlayerManager : Photon.PunBehaviour {
                     i++;
                 }
                 //Updates the kill count for the player who killed this player
-                _is.CallUpdateKills(i);
+                _is.CallUpdateKills(i, scoreAdd);
+
+                matchManager.UpdateScore(hitByTeam, scoreAdd);
             }
         }
     }
