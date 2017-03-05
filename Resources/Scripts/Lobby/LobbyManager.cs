@@ -10,7 +10,8 @@ public class LobbyManager : Photon.PunBehaviour
     public string playerName;
     public GameObject playerPanel;
     public GameObject canvas;
-    public RectTransform individualPlayerPanel;
+    public RectTransform playerRed;
+    public RectTransform playerBlue;
     public float countdown;
     public Text countdownText;
     public int playersForGameToBegin = 4;
@@ -33,6 +34,8 @@ public class LobbyManager : Photon.PunBehaviour
 
     void Start()
     {
+        Object.DontDestroyOnLoad(GameObject.Find("GameManager"));
+
         PhotonNetwork.sendRate = 10;
         PhotonNetwork.sendRateOnSerialize = 5;
 
@@ -150,10 +153,8 @@ public class LobbyManager : Photon.PunBehaviour
         //For each player creates text with player's name
         foreach (PhotonPlayer player in PhotonNetwork.playerList)
         {
-            RectTransform indvPlayerPanel = Instantiate(individualPlayerPanel);
-            indvPlayerPanel.transform.SetParent(panel.transform, false);
-            indvPlayerPanel.GetChild(0).GetComponent<Text>().text = player.name;
-            indvPlayerPanel.localPosition += Vector3.up * offset * -1;
+            RectTransform indvPlayerPanel = playerRed;
+
             //each new text is 30 pixels below previous text. 
             offset += 60;
 
@@ -161,12 +162,17 @@ public class LobbyManager : Photon.PunBehaviour
             Debug.Log(player.NickName + " is on team: " + team);
             if (team == "red")
             {
-                indvPlayerPanel.GetComponent<Image>().color = red;
+                indvPlayerPanel = Instantiate(playerRed);
+                indvPlayerPanel.transform.SetParent(panel.transform, false);
             }
             else if (team == "blue")
             {
-                indvPlayerPanel.GetComponent<Image>().color = blue;
+                indvPlayerPanel = Instantiate(playerBlue);
+                indvPlayerPanel.transform.SetParent(panel.transform, false);
             }
+
+            indvPlayerPanel.GetChild(1).GetComponent<Text>().text = player.name;
+            indvPlayerPanel.localPosition += Vector3.up * offset * -1;
         }
 
         if (PhotonNetwork.room.PlayerCount >= playersForGameToBegin && !_enoughPlayers)
@@ -196,7 +202,6 @@ public class LobbyManager : Photon.PunBehaviour
         Debug.Log("PhotonNetwork: Loading Level: Level_AsteroidField");
         //levels can be loaded by name(string), or build number (int)
         PhotonNetwork.room.IsOpen = false;
-        Object.DontDestroyOnLoad(GameObject.Find("GameManager"));
         PhotonNetwork.LoadLevel("Level_AsteroidField");
     }
 
