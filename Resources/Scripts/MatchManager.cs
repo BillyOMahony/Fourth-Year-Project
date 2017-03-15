@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using System.Collections;
 using System.Linq;
 
@@ -27,6 +28,8 @@ public class MatchManager : Photon.PunBehaviour {
     #region private variables
 
     int _spawnCounter = 0;
+    GameObject _redTeamText;
+    GameObject _blueTeamText;
 
     #endregion
 
@@ -66,6 +69,12 @@ public class MatchManager : Photon.PunBehaviour {
         Debug.Log("MatchManager: Spawn() called");
 
         PhotonNetwork.Instantiate(this.playerPrefab.name, spawnPoint.transform.position, spawnPoint.transform.rotation, 0);
+
+        _redTeamText = GameObject.Find("RedTeamScore Text");
+        _blueTeamText = GameObject.Find("BlueTeamScore Text");
+
+        _redTeamText.GetComponent<Text>().text = "Red Team " + RedScore;
+        _blueTeamText.GetComponent<Text>().text = "BlueTeam " + BlueScore;
     }
 
     /// <summary>
@@ -92,12 +101,14 @@ public class MatchManager : Photon.PunBehaviour {
     public void redTeamScored(int score)
     {
         RedScore += score;
+        UpdateScoreText();
     }
 
     [PunRPC]
     public void blueTeamScored(int score)
     {
         BlueScore += score;
+        UpdateScoreText();
     }
 
     [PunRPC]
@@ -131,6 +142,11 @@ public class MatchManager : Photon.PunBehaviour {
         //Stuff here to update GUI and such
     }
 
+    void UpdateScoreText()
+    {
+        _redTeamText.GetComponent<Text>().text = "Red Team " + RedScore;
+        _blueTeamText.GetComponent<Text>().text = "BlueTeam " + BlueScore;
+    }
 
     void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info) { }
 }
