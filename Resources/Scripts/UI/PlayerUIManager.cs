@@ -4,8 +4,6 @@ using System.Collections;
 
 public class PlayerUIManager : Photon.PunBehaviour {
 
-    public RectTransform HealthBar;
-
     public bool mine;
 
     //public PlayerController _PC;
@@ -16,6 +14,9 @@ public class PlayerUIManager : Photon.PunBehaviour {
     public Color color;
 
     GameObject TeamScorePanel;
+    Image HealthBar;
+    Image EngineBar;
+    Text Speedometer;
 
     // Use this for initialization
     void Start () {
@@ -27,12 +28,13 @@ public class PlayerUIManager : Photon.PunBehaviour {
         mine = _PC.GetComponent<PhotonView>().isMine;
 
         TeamScorePanel = GameObject.Find("TeamScores Panel");
+        HealthBar = GameObject.Find("HealthBar").GetComponent<Image>();
+        EngineBar = GameObject.Find("EngineBar").GetComponent<Image>();
+        Speedometer = GameObject.Find("Speedometer Text").GetComponent<Text>();
 
         if (mine)
         {
-            HealthBar = Instantiate(HealthBar);
-            HealthBar.transform.SetParent(GameObject.Find("GameUI").transform, false);
-            HealthBar = HealthBar.transform.GetChild(0).GetComponent<RectTransform>();
+
 
             if (_PM.team == "red")
             {
@@ -44,17 +46,34 @@ public class PlayerUIManager : Photon.PunBehaviour {
             }
 
             TeamScorePanel.GetComponent<Image>().color = color;
+            HealthBar.color = color;
+            EngineBar.color = color;
         }
     }
 	
 	// Update is called once per frame
 	void Update () {
-        UpdateHealthBar();
+        if (_PC.GetComponent<PhotonView>().isMine) {
+            UpdateHealthBar();
+            UpdateEngineBar();
+            UpdateSpeedometer();
+        }
+        
+    }
+
+    public void UpdateSpeedometer()
+    {
+
+        Speedometer.text = _PC.zVel.ToString("0.0") + "m/s";
+    }
+
+    public void UpdateEngineBar()
+    {
+        EngineBar.fillAmount = _PC.engine;
     }
 
     public void UpdateHealthBar()
     {
-        //Debug.Log("UpdateHealthBar() called");
-        HealthBar.sizeDelta = new Vector2(_PM.Health * 3, 40);
+        HealthBar.fillAmount = _PM.Health / 100;
     }
 }
