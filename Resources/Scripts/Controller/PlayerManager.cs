@@ -9,7 +9,7 @@ public class PlayerManager : Photon.PunBehaviour {
     public float Health;
     public GameObject DeathCamera;
     public string team;
-
+    public float outOfBoundsTimer = 10.0f;
     #endregion
 
     #region private variables
@@ -26,11 +26,13 @@ public class PlayerManager : Photon.PunBehaviour {
 
     PhotonView _pv;
 
+    PlayerUIManager _puim;
     ScoreManager _sm;
     IndividualScore _is;
 
     float timer = 5f;
 
+    bool outOfBounds = false;
     #endregion
 
     // Use this for initialization
@@ -41,6 +43,7 @@ public class PlayerManager : Photon.PunBehaviour {
 
         _pv = GetComponent<PhotonView>();
         _sm = GetComponent<ScoreManager>();
+        _puim = GetComponent<PlayerUIManager>();
 
         Health = OriginalHealth;
 
@@ -67,6 +70,20 @@ public class PlayerManager : Photon.PunBehaviour {
         {
             Respawn();
         }
+
+        if (outOfBounds)
+        {
+            outOfBoundsTimer -= Time.deltaTime;
+            if(outOfBoundsTimer < 0)
+            {
+                GetComponent<PhotonView>().RPC("DeActivate", PhotonTargets.All);
+                DisableClient();
+                KillClient();
+                outOfBounds = false;
+                outOfBoundsTimer = 10.0f;
+                _puim.BackInBounds();
+            }
+        }
 	}
 
     public void DamageTaken(float damage, string hitBy)
@@ -91,8 +108,6 @@ public class PlayerManager : Photon.PunBehaviour {
                 GetComponent<PhotonView>().RPC("DeActivate", PhotonTargets.All);
                 int i = 0;
 
-                // Fix this shit, there's probably a way to get object owner ID aside from this
-                // needs to be fixed because two players can have the same name.
                 foreach (PhotonPlayer player in PhotonNetwork.playerList)
                 {
                     if (player.NickName == owner)
@@ -129,12 +144,14 @@ public class PlayerManager : Photon.PunBehaviour {
     void DeActivate()
     {
         transform.GetChild(0).gameObject.SetActive(false);
+        transform.GetChild(3).gameObject.SetActive(false);
     }
 
     [PunRPC]
     void Activate()
     {
         transform.GetChild(0).gameObject.SetActive(true);
+        transform.GetChild(3).gameObject.SetActive(true);
         // Health is set here because currently when Activate is called, it's used for respawning.
         Health = 100f;
     }
@@ -176,5 +193,18 @@ public class PlayerManager : Photon.PunBehaviour {
         transform.rotation = spawnPoint.transform.rotation;
         GetComponent<PhotonView>().RPC("Activate", PhotonTargets.All);
         controller.Enabled();
+    }
+
+    public void OutOfBounds()
+    {
+        outOfBounds = true;
+        _puim.OutOfBounds();
+    }
+
+    public void BackInBounds()
+    {
+        outOfBounds = false;
+        outOfBoundsTimer = 10.0f;
+        _puim.BackInBounds();
     }
 }

@@ -286,11 +286,13 @@ public class PlayerControllerRB : Photon.PunBehaviour
         {
             stream.SendNext(transform.position);
             stream.SendNext(transform.rotation);
+            stream.SendNext(engine);
         }
         else
         {
             transform.position = (Vector3)stream.ReceiveNext();
             transform.rotation = (Quaternion)stream.ReceiveNext();
+            engine = (float)stream.ReceiveNext();
         }
     }
 }

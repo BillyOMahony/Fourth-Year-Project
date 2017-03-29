@@ -13,6 +13,8 @@ public class PlayerUIManager : Photon.PunBehaviour {
 
     public Color color;
 
+    GameObject outOfBounds;
+
     GameObject TeamScorePanel;
     Image HealthBar;
     Image EngineBar;
@@ -31,6 +33,9 @@ public class PlayerUIManager : Photon.PunBehaviour {
         HealthBar = GameObject.Find("HealthBar").GetComponent<Image>();
         EngineBar = GameObject.Find("EngineBar").GetComponent<Image>();
         Speedometer = GameObject.Find("Speedometer Text").GetComponent<Text>();
+        outOfBounds = GameObject.Find("OutOfBounds Text");
+
+        outOfBounds.SetActive(false);
 
         if (mine)
         {
@@ -58,7 +63,8 @@ public class PlayerUIManager : Photon.PunBehaviour {
             UpdateEngineBar();
             UpdateSpeedometer();
         }
-        
+
+        outOfBounds.GetComponent<Text>().text = "Return to area, you have " + _PM.outOfBoundsTimer.ToString("0.0") + " seconds";
     }
 
     public void UpdateSpeedometer()
@@ -76,4 +82,15 @@ public class PlayerUIManager : Photon.PunBehaviour {
     {
         HealthBar.fillAmount = _PM.Health / 100;
     }
+
+    public void OutOfBounds()
+    {
+        outOfBounds.SetActive(true);
+    }
+
+    public void BackInBounds()
+    {
+        outOfBounds.SetActive(false);
+    }
+
 }

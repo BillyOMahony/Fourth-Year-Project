@@ -33,7 +33,7 @@ public class AsteroidSpawner : Photon.PunBehaviour {
                     if (RandomSpawn())
                     {
                         GameObject asteroid = AsteroidToSpawn();
-                        asteroid = PhotonNetwork.Instantiate(asteroid.name, new Vector3(x * 20 - 100, y * 20 - 250, z * 20 - 250), AsteroidRotation(), 0);
+                        asteroid = PhotonNetwork.Instantiate(asteroid.name, new Vector3(x * 20 - 300, y * 20 - 500, z * 20 - 175), AsteroidRotation(), 0);
                         float scale = AsteroidScale();
                         asteroid.transform.localScale = new Vector3(scale, scale, scale);
                     }
