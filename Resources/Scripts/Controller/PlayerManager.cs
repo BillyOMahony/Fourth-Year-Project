@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+using System.Collections.Generic;
+
 public class PlayerManager : Photon.PunBehaviour {
 
     #region public variables
@@ -33,6 +35,8 @@ public class PlayerManager : Photon.PunBehaviour {
     float timer = 5f;
 
     bool outOfBounds = false;
+
+    ExplosionScript _es;
     #endregion
 
     // Use this for initialization
@@ -44,6 +48,7 @@ public class PlayerManager : Photon.PunBehaviour {
         _pv = GetComponent<PhotonView>();
         _sm = GetComponent<ScoreManager>();
         _puim = GetComponent<PlayerUIManager>();
+        _es = GetComponent<ExplosionScript>();
 
         Health = OriginalHealth;
 
@@ -55,11 +60,17 @@ public class PlayerManager : Photon.PunBehaviour {
         _gameManager = GameObject.Find("GameManager");
         _teams = _gameManager.GetComponent<Teams>();
 
-        team = _teams.GetTeam(owner);
+        Debug.Log("Calling Teams.GetTeam(|" + owner + "|)");
+        team = _gameManager.GetComponent<GameManager>().team;
 
         if (matchManager == null)
         {
             Debug.Log("<Color=Red>Cannot Find</Color> MatchManager GameObject");
+        }
+
+        foreach (KeyValuePair<string, string> player in _teams.teams)
+        {
+            Debug.LogWarning("|" + player.Key + "|");
         }
 
     }
@@ -98,12 +109,16 @@ public class PlayerManager : Photon.PunBehaviour {
 
             if (Health <= 0)
             {
+                Debug.LogWarning("<color=red>Calling Teams.GetTeam("+ hitBy +")</color>");
                 string hitByTeam = _teams.GetTeam(hitBy);
+                Debug.LogWarning("Returned: " + hitByTeam);
                 int scoreAdd = 1;
                 if(hitByTeam == team)
                 {
                     scoreAdd = -1;
                 }
+                Debug.Log("Player from " + hitByTeam + " killed player from " + team);
+
 
                 GetComponent<PhotonView>().RPC("DeActivate", PhotonTargets.All);
                 int i = 0;
@@ -135,6 +150,7 @@ public class PlayerManager : Photon.PunBehaviour {
                 //Updates the kill count for the player who killed this player
                 _is.CallUpdateKills(i, scoreAdd);
 
+                Debug.LogWarning("Calling MatchManager.UpdateScore(|" + hitByTeam + "|,|" + scoreAdd + "|");
                 matchManager.UpdateScore(hitByTeam, scoreAdd);
             }
         }
@@ -145,6 +161,7 @@ public class PlayerManager : Photon.PunBehaviour {
     {
         transform.GetChild(0).gameObject.SetActive(false);
         transform.GetChild(3).gameObject.SetActive(false);
+        _es.PlayExplosion();
     }
 
     [PunRPC]

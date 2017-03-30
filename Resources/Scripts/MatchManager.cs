@@ -10,10 +10,11 @@ public class MatchManager : Photon.PunBehaviour {
 
     static public MatchManager Instance;
     
-    public GameObject playerPrefab;
+    public GameObject redPrefab;
+    public GameObject bluePrefab;
+
     public GameObject[] spawners = new GameObject[2];
 
-    //Temp
     public GameObject spawnPoint;
 
     public GameObject GameManager;
@@ -22,6 +23,8 @@ public class MatchManager : Photon.PunBehaviour {
     public int BlueScore = 0;
 
     public int scoreToWin = 5;
+
+    public string team;
 
     #endregion
 
@@ -42,18 +45,23 @@ public class MatchManager : Photon.PunBehaviour {
 
         Cursor.visible = false;
 
-        if (playerPrefab == null)
+        team = GameManager.GetComponent<GameManager>().GetMyTeam();
+
+        if (redPrefab == null)
         {
-            Debug.Log("<Color=Red><a>Missing</a></Color> playerPrefab reference. Set it Up!");
+            Debug.LogError("<Color=Red><a>Missing</a></Color> redPrefab reference. Set it Up!");
+        }
+        else if(bluePrefab == null)
+        {
+            Debug.LogError("<Color=Red><a>Missing</a></Color> bluePrefab reference. Set it Up!");
         }
         else if (spawners.Any(n=>n == null))
         {
-            Debug.Log("<Color=Red><a>Missing</a></Color> spawners reference contains one or more nulls. Fix This!");
+            Debug.LogError("<Color=Red><a>Missing</a></Color> spawners reference contains one or more nulls. Fix This!");
         }
-        else
-        {
-            Spawn();
-        }
+
+        Spawn();
+
     }
 
     #endregion
@@ -66,10 +74,19 @@ public class MatchManager : Photon.PunBehaviour {
     void Spawn()
     {
         GameObject spawnPoint = SelectSpawner();
-        Debug.Log("MatchManager: Spawn() called");
+        Debug.LogWarning("MatchManager: Spawn() called");
 
-        PhotonNetwork.Instantiate(this.playerPrefab.name, spawnPoint.transform.position, spawnPoint.transform.rotation, 0);
-
+        if (team == "red")
+        {
+            PhotonNetwork.Instantiate(redPrefab.name, spawnPoint.transform.position, spawnPoint.transform.rotation, 0);
+        }
+        else if(team == "blue")
+        {
+            PhotonNetwork.Instantiate(bluePrefab.name, spawnPoint.transform.position, spawnPoint.transform.rotation, 0);
+        }else
+        {
+            Debug.LogError("MatchManager: Spawn() could not spawn player");
+        }
         _redTeamText = GameObject.Find("RedTeamScore Text");
         _blueTeamText = GameObject.Find("BlueTeamScore Text");
 

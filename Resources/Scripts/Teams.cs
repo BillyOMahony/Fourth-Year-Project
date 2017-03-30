@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Teams : Photon.PunBehaviour{
 
-    public Text text;
+    public string text = "text";
 
     public Dictionary<string, string> teams = new Dictionary<string, string>();
     public int redCount = 0;
@@ -21,67 +21,47 @@ public class Teams : Photon.PunBehaviour{
 
         if(redCount == 0 && blueCount == 0)
         {
-            AddPlayer(PhotonNetwork.playerList[0]);
+            //AddPlayer(PhotonNetwork.playerList[0]);
         }
     }
 
-    void Update()
-    {
-        if (!PhotonNetwork.isMasterClient)
-        {
-            RedCount();
-            BlueCount();
-        }
-    }
-
-    public void AddPlayer(PhotonPlayer other)
+    public void AddPlayer(string name)
     {
         if(redCount <= blueCount)
         {
-            Debug.Log("Adding " + other.NickName + " to Red team");
-            teams.Add(other.NickName, _red);
+            Debug.Log("Adding " + name + " to Red team");
+            teams.Add(name, _red);
         }
         else
         {
-            Debug.Log("Adding " + other.NickName + " to Blue team");
-            teams.Add(other.NickName, _blue);
+            Debug.Log("Adding " + name + " to Blue team");
+            teams.Add(name, _blue);
         }
 
-        RedCount();
-        BlueCount();
+    //    RedCount();
+    //    BlueCount();
     }
 
-    public void RemovePlayer(PhotonPlayer other)
+    public void RemovePlayer(string name)
     {
-        teams.Remove(other.NickName);
-
-        RedCount();
-        BlueCount();
+        teams.Remove(name);
     }
 
-
-    void RedCount()
+    public void JoinTeam(string name, string team)
     {
-        redCount = 0;
-        foreach(KeyValuePair<string, string> player in teams)
-        {
-            if(player.Value == _red)
+        bool found = false;
+        foreach (KeyValuePair<string,string> player in teams){
+            if(player.Key == name)
             {
-                redCount++;
+                Debug.Log("Key found, removing");
+                found = true;
             }
         }
-    }
-
-    void BlueCount()
-    {
-        blueCount = 0;
-        foreach (KeyValuePair<string, string> player in teams)
+        if (found)
         {
-            if (player.Value == _blue)
-            {
-                blueCount++;
-            }
+            RemovePlayer(name);
         }
+        teams.Add(name, team);
     }
 
     public string GetTeam(string playerName)
@@ -94,11 +74,8 @@ public class Teams : Photon.PunBehaviour{
         else
         {
             return "Error";
-            //Debug.LogError("Teams: GetTeam() Could not find player: " + playerName);
-            //return "ERROR";
         }
     }
-
 
     void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {

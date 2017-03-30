@@ -10,9 +10,8 @@ public class LobbyManager : Photon.PunBehaviour
     public string playerName;
     public GameObject playerPanel;
     public GameObject canvas;
-    public RectTransform playerRed;
-    public RectTransform playerBlue;
-    public float countdown;
+    public RectTransform playerImage;
+    public float countdown = 10.0f;
     public Text countdownText;
     public int playersForGameToBegin = 4;
 
@@ -23,7 +22,7 @@ public class LobbyManager : Photon.PunBehaviour
     GameObject panel;
     Teams teams;
     public string team; 
-    public bool _enoughPlayers = false;
+    public bool playersReady = false;
 
     Color red = new Color(0.447f, 0.255f, 0.18f, 1.0f);
     Color blue = new Color(0.18f, 0.255f, 0.447f, 1.0f);
@@ -34,27 +33,17 @@ public class LobbyManager : Photon.PunBehaviour
 
     void Start()
     {
-        Object.DontDestroyOnLoad(GameObject.Find("GameManager"));
+        playerName = PhotonNetwork.player.NickName;
+
+        DontDestroyOnLoad(GameObject.Find("GameManager"));
 
         PhotonNetwork.sendRate = 10;
         PhotonNetwork.sendRateOnSerialize = 5;
 
         countdownText = Instantiate(countdownText) as Text;
         countdownText.transform.SetParent(canvas.transform, false);
-        playerName = PhotonNetwork.player.NickName;
 
         teams = GameObject.Find("GameManager").GetComponent<Teams>();
-        team = teams.GetTeam(playerName);
-
-        if (!PhotonNetwork.isMasterClient)
-        {
-            PlayerCountChangeOnStartPause();
-        }
-        else
-        {
-            PlayerCountChange();
-        }
-
     }
 
     void Update()
@@ -62,7 +51,7 @@ public class LobbyManager : Photon.PunBehaviour
         float currentTime = Mathf.Floor(countdown);
         // if enoughPlayers = True, countdown begins.
         // when countdown <= 0, Game begins.
-        if (_enoughPlayers)
+        if (playersReady)
         {
             if (PhotonNetwork.isMasterClient)
             {
@@ -81,7 +70,9 @@ public class LobbyManager : Photon.PunBehaviour
             }
             
         }
-        
+
+        UpdateGUI();
+        CheckPlayerReadyStatus();
     }
 
     #endregion
@@ -91,7 +82,6 @@ public class LobbyManager : Photon.PunBehaviour
 
     void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-
         if (stream.isWriting == true)
         {
             stream.SendNext(countdown);
@@ -100,31 +90,23 @@ public class LobbyManager : Photon.PunBehaviour
         {
             countdown = (float)stream.ReceiveNext();
         }
-
     }
 
     // Called when a player connects. 
     public override void OnPhotonPlayerConnected(PhotonPlayer other)
     {
-        Debug.Log("OnPhotonPlayerConnected(): " + other.NickName);
-
-        //Test Method
-        PlayerCountChangeOnStartPause();
-        
+        UpdateGUI();
     }
 
     public override void OnPhotonPlayerDisconnected(PhotonPlayer other)
     {
-        Debug.Log("OnPhotonPlayerDisconnected(): " + other.NickName);
-
-        //Test Method
-        PlayerCountChange();
+        UpdateGUI();
     }
 
     #endregion
 
     #region private methods
-
+    /*
     /// <summary>
     /// This is how a level will be loaded in the game, I made "Lobby" a seperate level to learn how to do this
     /// </summary>
@@ -136,8 +118,10 @@ public class LobbyManager : Photon.PunBehaviour
         }
         Debug.Log("PhotonNetwork: Loading Level: Lobby");
         //levels can be loaded by name(string), or build number (int)
+        
         PhotonNetwork.LoadLevel("Lobby");
     }
+    */
 
     /// <summary>
     /// Called every time the number of players changes. It destroys the player UI and rebuilds it
@@ -153,7 +137,7 @@ public class LobbyManager : Photon.PunBehaviour
         //For each player creates text with player's name
         foreach (PhotonPlayer player in PhotonNetwork.playerList)
         {
-            RectTransform indvPlayerPanel = playerRed;
+            RectTransform indvPlayerPanel = playerImage;
 
             //each new text is 30 pixels below previous text. 
             offset += 60;
@@ -162,35 +146,70 @@ public class LobbyManager : Photon.PunBehaviour
             Debug.Log(player.NickName + " is on team: " + team);
             if (team == "red")
             {
-                indvPlayerPanel = Instantiate(playerRed);
+                indvPlayerPanel = Instantiate(playerImage);
                 indvPlayerPanel.transform.SetParent(panel.transform, false);
             }
             else if (team == "blue")
             {
-                indvPlayerPanel = Instantiate(playerBlue);
+                indvPlayerPanel = Instantiate(playerImage);
                 indvPlayerPanel.transform.SetParent(panel.transform, false);
             }
 
             indvPlayerPanel.GetChild(1).GetComponent<Text>().text = player.name;
             indvPlayerPanel.localPosition += Vector3.up * offset * -1;
         }
+    }
 
-        if (PhotonNetwork.room.PlayerCount >= playersForGameToBegin && !_enoughPlayers)
+    void CheckPlayerReadyStatus()
+    {
+        bool AllReady = true;
+        Transform[] Children = GameObject.Find("PlayerInstance Container").GetComponentsInChildren<Transform>();
+        foreach (Transform child in Children)
         {
-            Debug.Log("Lobby: Calling Countdown()");
-            Countdown();
+            PlayerLobbyManager plm = child.GetComponent<PlayerLobbyManager>();
+            if (child.name != "PlayerInstance Container")
+            {
+                if (!plm.ready)
+                {
+                    AllReady = false;
+                    break;
+                }
+            }
+        }
+        if (AllReady)
+        {
+            playersReady = AllReady;
         }
     }
 
-    void PlayerCountChangeOnStartPause()
+    public void UpdateGUI()
     {
-        StartCoroutine(PlayerCountChangeIEnumerator(1));
-    }
+        Destroy(panel);
+        panel = Instantiate(playerPanel) as GameObject;
+        panel.transform.SetParent(canvas.transform, false);
 
-    void Countdown()
-    {
-        _enoughPlayers = !_enoughPlayers;
-        countdown = 10.0f;
+        float offset = 0;
+
+        Transform[] Children = GameObject.Find("PlayerInstance Container").GetComponentsInChildren<Transform>();
+        foreach(Transform child in Children)
+        {
+            PlayerLobbyManager plm = child.GetComponent<PlayerLobbyManager>();
+            if (child.name != "PlayerInstance Container")
+            {
+                RectTransform indvPlayerPanel = Instantiate(playerImage);
+                indvPlayerPanel.transform.SetParent(panel.transform, false);
+                offset += 60;
+                indvPlayerPanel.GetChild(1).GetComponent<Text>().text = plm.Name;
+                indvPlayerPanel.localPosition += Vector3.up * offset * -1;
+                if(plm.team == "red")
+                {
+                    indvPlayerPanel.GetComponent<Image>().color = red;
+                }else if(plm.team == "blue")
+                {
+                    indvPlayerPanel.GetComponent<Image>().color = blue;
+                }
+            }
+        }
     }
 
     void BeginGame()
@@ -206,12 +225,4 @@ public class LobbyManager : Photon.PunBehaviour
     }
 
     #endregion
-
-    IEnumerator PlayerCountChangeIEnumerator(int seconds)
-    {
-        Debug.Log("Before Waiting 2 seconds");
-        yield return new WaitForSeconds(seconds);
-        PlayerCountChange();
-        Debug.Log("After Waiting 2 Seconds");
-    }
 }

@@ -8,18 +8,25 @@ public class GameManager : Photon.PunBehaviour {
     #region public variables
     //Any other script can now call GameManager.Instance.method()
     static public GameManager Instance;
+    public GameObject playerInstance;
+    public bool ready = false;
+
+    LobbyManager _lm;
 
     #endregion
 
     #region private variables
 
-    Teams teams;
+    public Teams teams;
+    public string team = "NA";
 
     #endregion
 
     void Start()
     {
+        _lm = GameObject.Find("LobbyManager").GetComponent<LobbyManager>();
         teams = gameObject.GetComponent<Teams>();
+        PhotonNetwork.Instantiate(playerInstance.name, playerInstance.transform.position, playerInstance.transform.rotation, 0);
     }
 
 
@@ -36,22 +43,19 @@ public class GameManager : Photon.PunBehaviour {
         Application.Quit();
     }
 
-    public override void OnPhotonPlayerConnected(PhotonPlayer other)
+    public string GetMyTeam()
     {
-        if (PhotonNetwork.isMasterClient)
-        {
-            teams.AddPlayer(other);
-        }
+        return team;
     }
 
     public override void OnPhotonPlayerDisconnected(PhotonPlayer other)
     {
         if (PhotonNetwork.isMasterClient)
         {
-            teams.RemovePlayer(other);
+            teams.RemovePlayer(other.NickName);
         }
     }
-
+    
     #endregion
 
     #region Photon Messages
@@ -66,4 +70,39 @@ public class GameManager : Photon.PunBehaviour {
     }
 
     #endregion
+
+    public void CallJoinRedTeam()
+    {
+        GetComponent<PhotonView>().RPC("JoinRedTeam", PhotonTargets.All, PhotonNetwork.player.NickName);
+    }
+
+    public void CallJoinBlueTeam()
+    {
+        GetComponent<PhotonView>().RPC("JoinBlueTeam", PhotonTargets.All, PhotonNetwork.player.NickName);
+    }
+
+    [PunRPC]
+    public void JoinRedTeam(string name)
+    {
+        if (PhotonNetwork.isMasterClient)
+        {
+            teams.JoinTeam(name, "red");
+        }
+    }
+    
+
+    [PunRPC]
+    public void JoinBlueTeam(string name)
+    {
+        if (PhotonNetwork.isMasterClient)
+        {
+            teams.JoinTeam(name, "blue");
+        }
+    }
+
+    void OnPhotonSerializeView()
+    {
+        //leave empty, must be declared for PunRPCs to work
+    }
+
 }
