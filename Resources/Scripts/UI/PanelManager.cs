@@ -9,7 +9,10 @@ public class PanelManager : MonoBehaviour {
     public GameObject Scoreboard;
     public GameObject GameMenu;
 
+    public bool uiActive = false;
+
     private bool _menuState = false;
+    CursorStates _cs;
 
 	// Use this for initialization
 	void Start () {
@@ -20,6 +23,8 @@ public class PanelManager : MonoBehaviour {
         GameOverlay.SetActive(true);
         Scoreboard.SetActive(false);
         GameMenu.SetActive(false);
+
+        _cs = GameObject.Find("CursorStates").GetComponent<CursorStates>();
 	}
 	
 	// Update is called once per frame
@@ -32,7 +37,8 @@ public class PanelManager : MonoBehaviour {
                 GameOverlay.SetActive(false);
                 Scoreboard.SetActive(false);
                 GameMenu.SetActive(true);
-                Cursor.visible = true;
+                uiActive = true;
+                _cs.UnlockCursor();
                 _menuState = true;
             }
             else
@@ -63,7 +69,8 @@ public class PanelManager : MonoBehaviour {
         GameOverlay.SetActive(true);
         Scoreboard.SetActive(false);
         GameMenu.SetActive(false);
-        Cursor.visible = false;
+        _cs.UnlockCursor();
+        uiActive = false;
         _menuState = false;
     }
 }

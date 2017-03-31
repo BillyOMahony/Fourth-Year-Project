@@ -53,6 +53,16 @@ public class Launcher : Photon.PunBehaviour {
         // #Critical
         // This makes sure we can use PhotonNetwork.LoadLevel() on the master client and all other clients in the same room sync their level automatically.
         PhotonNetwork.automaticallySyncScene = true;
+
+        //Check if GameManager exists in scene, if it does destroy it. It may exist if player leaves lobby or game as they are returned to main menu
+        GameObject Gm = GameObject.Find("GameManager");
+        if (Gm != null)
+        {
+            Destroy(Gm);
+        }
+
+        GameObject.Find("CursorStates").GetComponent<CursorStates>().UnlockCursor();
+
     }
 	
     void Start()

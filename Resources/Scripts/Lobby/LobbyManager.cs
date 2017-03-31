@@ -27,12 +27,16 @@ public class LobbyManager : Photon.PunBehaviour
     Color red = new Color(0.447f, 0.255f, 0.18f, 1.0f);
     Color blue = new Color(0.18f, 0.255f, 0.447f, 1.0f);
 
+    IconScript _icons;
+
     #endregion
 
     #region MonoBehaviour Methods
 
     void Start()
     {
+        _icons = GameObject.Find("PlayerIcon").GetComponent<IconScript>();
+
         playerName = PhotonNetwork.player.NickName;
 
         DontDestroyOnLoad(GameObject.Find("GameManager"));
@@ -44,6 +48,8 @@ public class LobbyManager : Photon.PunBehaviour
         countdownText.transform.SetParent(canvas.transform, false);
 
         teams = GameObject.Find("GameManager").GetComponent<Teams>();
+
+        GameObject.Find("CursorStates").GetComponent<CursorStates>().UnlockCursor();
     }
 
     void Update()
@@ -106,23 +112,6 @@ public class LobbyManager : Photon.PunBehaviour
     #endregion
 
     #region private methods
-    /*
-    /// <summary>
-    /// This is how a level will be loaded in the game, I made "Lobby" a seperate level to learn how to do this
-    /// </summary>
-    void LoadLobby()
-    {
-        if (!PhotonNetwork.isMasterClient)
-        {
-            Debug.Log("PhotonNetwork: Trying to load level, but not master client.");
-        }
-        Debug.Log("PhotonNetwork: Loading Level: Lobby");
-        //levels can be loaded by name(string), or build number (int)
-        
-        PhotonNetwork.LoadLevel("Lobby");
-    }
-    */
-
     /// <summary>
     /// Called every time the number of players changes. It destroys the player UI and rebuilds it
     /// </summary>
@@ -155,7 +144,7 @@ public class LobbyManager : Photon.PunBehaviour
                 indvPlayerPanel.transform.SetParent(panel.transform, false);
             }
 
-            indvPlayerPanel.GetChild(1).GetComponent<Text>().text = player.name;
+            indvPlayerPanel.GetChild(1).GetComponent<Text>().text = player.NickName;
             indvPlayerPanel.localPosition += Vector3.up * offset * -1;
         }
     }
@@ -199,6 +188,7 @@ public class LobbyManager : Photon.PunBehaviour
                 RectTransform indvPlayerPanel = Instantiate(playerImage);
                 indvPlayerPanel.transform.SetParent(panel.transform, false);
                 offset += 60;
+                indvPlayerPanel.GetChild(0).GetComponent<Image>().sprite = _icons.GetIcon(plm.icon);
                 indvPlayerPanel.GetChild(1).GetComponent<Text>().text = plm.Name;
                 indvPlayerPanel.localPosition += Vector3.up * offset * -1;
                 if(plm.team == "red")

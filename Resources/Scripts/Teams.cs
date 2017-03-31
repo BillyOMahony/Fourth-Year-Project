@@ -16,6 +16,7 @@ public class Teams : Photon.PunBehaviour{
 
     void Start()
     {
+
         PhotonNetwork.sendRate = 10;
         PhotonNetwork.sendRateOnSerialize = 5;
 

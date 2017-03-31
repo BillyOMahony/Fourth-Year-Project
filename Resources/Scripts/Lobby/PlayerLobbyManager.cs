@@ -23,7 +23,7 @@ public class PlayerLobbyManager : MonoBehaviour {
         Name = _pv.owner.NickName;
         if (_pv.isMine)
         {
-            //icon = PlayerPrefs.GetInt("PlayerIcon");
+            icon = PlayerPrefs.GetInt("PlayerIcon");
         }
 
         _lm.UpdateGUI();

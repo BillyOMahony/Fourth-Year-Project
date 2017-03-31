@@ -5,6 +5,7 @@ public class PlayerControllerRB : Photon.PunBehaviour
 {
 
     public bool disabled = false;
+    public bool uiActive = false;
     public string owner;
 
     #region public variables movement
@@ -64,6 +65,7 @@ public class PlayerControllerRB : Photon.PunBehaviour
     AudioSource audio;
 
     ScoreManager _SM;
+    PanelManager _PM;
 
     public float _massMultiplier;
 
@@ -86,14 +88,19 @@ public class PlayerControllerRB : Photon.PunBehaviour
         owner = GetComponent<PhotonView>().owner.NickName;
 
         _massMultiplier = _body.mass;
+
+        _PM = GameObject.Find("PanelManager").GetComponent<PanelManager>();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
         AngularVelocity = _body.angularVelocity;
+        uiActive = _PM.uiActive;
 
-        if (disabled)
+        Debug.LogWarning(disabled + ", " + uiActive);
+
+        if (disabled || uiActive)
         {
             return;
         }

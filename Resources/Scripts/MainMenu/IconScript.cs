@@ -11,6 +11,8 @@ public class IconScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+        DontDestroyOnLoad(gameObject);
+
         if (PlayerPrefs.HasKey("PlayerIcon"))
         {
             iconInt = PlayerPrefs.GetInt("PlayerIcon");
@@ -39,5 +41,10 @@ public class IconScript : MonoBehaviour {
         {
             Debug.LogError("ChangeIcon(): PlayerPrefs does not contain key");
         }
+    }
+
+    public Sprite GetIcon(int num)
+    {
+        return icons[num];
     }
 }

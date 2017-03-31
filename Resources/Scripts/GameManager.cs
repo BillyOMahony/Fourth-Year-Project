@@ -35,7 +35,9 @@ public class GameManager : Photon.PunBehaviour {
     public void LeaveRoom()
     {
         Debug.Log("GameManager: LeaveRoom() called");
-        PhotonNetwork.LeaveRoom();    
+        PhotonNetwork.LeaveRoom();
+        Destroy(GameObject.Find("CursorStates"));
+        Destroy(GameObject.Find("PlayerIcon"));
     }
 
     public void ExitGame()

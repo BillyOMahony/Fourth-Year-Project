@@ -43,7 +43,7 @@ public class MatchManager : Photon.PunBehaviour {
 
         GameManager = GameObject.Find("GameManager");
 
-        Cursor.visible = false;
+        GameObject.Find("CursorStates").GetComponent<CursorStates>().LockCursor();
 
         team = GameManager.GetComponent<GameManager>().GetMyTeam();
 
