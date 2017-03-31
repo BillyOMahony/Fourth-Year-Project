@@ -21,6 +21,8 @@ public class Launcher : Photon.PunBehaviour {
     [Tooltip("The UI Label to inform the user that the connection is in progress")]
     public GameObject progressLabel;
 
+    public GameObject customizePanel;
+
     #endregion
 
     #region private variables
@@ -56,12 +58,25 @@ public class Launcher : Photon.PunBehaviour {
     void Start()
     {
         progressLabel.SetActive(false);
-        controlPanel.SetActive(true);  
+        controlPanel.SetActive(true);
+        customizePanel.SetActive(false);
     }
 
     #endregion
 
     #region Public Methods
+
+    public void Customize()
+    {
+        controlPanel.SetActive(false);
+        customizePanel.SetActive(true);
+    }
+
+    public void MainMenu()
+    {
+        controlPanel.SetActive(true);
+        customizePanel.SetActive(false);
+    }
 
     public void Connect()
     {
