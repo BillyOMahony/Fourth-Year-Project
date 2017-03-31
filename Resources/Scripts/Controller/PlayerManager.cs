@@ -60,8 +60,8 @@ public class PlayerManager : Photon.PunBehaviour {
         _gameManager = GameObject.Find("GameManager");
         _teams = _gameManager.GetComponent<Teams>();
 
-        Debug.Log("Calling Teams.GetTeam(|" + owner + "|)");
-        team = _gameManager.GetComponent<GameManager>().team;
+        Debug.LogWarning("Calling Teams.GetTeam(|" + owner + "|)");
+        team = _gameManager.GetComponent<Teams>().GetTeam(owner);
 
         if (matchManager == null)
         {
@@ -224,4 +224,6 @@ public class PlayerManager : Photon.PunBehaviour {
         outOfBoundsTimer = 10.0f;
         _puim.BackInBounds();
     }
+
+
 }

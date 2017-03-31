@@ -20,7 +20,8 @@ public class ShowName : MonoBehaviour {
             _name = PlayerPrefs.GetString("PlayerName");
         }
         gameObject.GetComponent<Text>().text = "Welcome " + _name;
-	}
+        PhotonNetwork.playerName = _name + " ";
+    }
 
     #endregion
 

@@ -57,7 +57,7 @@ public class AsteroidSpawner : Photon.PunBehaviour {
 
     GameObject AsteroidToSpawn()
     {
-        int num = Random.Range(1, 3);
+        int num = Random.Range(1, 4);
         if (num == 1)
         {
             return asteroid01;
